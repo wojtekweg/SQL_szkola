@@ -179,4 +179,4 @@ Piętro
 Imprezy szkolne
 Data
 
-(max 28)
+(tabel 25 + 3 dodatkowe)
