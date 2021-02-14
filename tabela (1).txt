@@ -1,0 +1,182 @@
+1
+Osoby:
+IDOsoby
+Imię
+Nazwisko
+Adres zamieszkanie
+Telefon
+//Status
+
+2
+Nauczyciele:
+IDNauczyciela
+Przedmiot (uczy jednego przedmiotu)
+Przedmiot fakulatatywny NULL
+Wychowawca (klasy, musi być nauczyciel na klasę)
+//Status
+Data zatrudnienia
+Stawka
+
+3
+Przedmioty nauczyciela
+IDPrzedmiotu
+Nauczyciel (który to uczy)
+
+4
+Spis przedmiotów
+IDPrzedmiotu
+Nazwa przedmiotu
+
+5
+Przedmioty fakultatywne
+IDPrzedmiotu
+Nazwa przedmiotu
+Nauczyciel (który to uczy)
+Status
+
+6
+Spis przedmiotów fakulatatywnych
+IDprzedmiotu
+Nazwa przedmiotu
+
+7
+Uczniowie:
+IDUczeń -> IDOsoby
+IDKlasy ->
+IDUwagi
+
+8
+Uwagi:
+IDUwagi
+IDUczeń
+Opis uwagi
+Kiedy uwaga
+Waga uwagi (jak poważna uwaga)
+
+9
+Stypendia:
+IDStypendium
+IDUczeń
+Od kiedy
+Do kiedy
+Kwota
+
+10
+Dni wolne:
+Kiedy
+Powód
+
+11
+Urlopy:
+IDPracownika
+Od kiedy
+Do kiedy
+Powód
+Płatny
+
+12
+Zwolnienia:
+ID
+Od kiedy
+Do kiedy
+IDUcznia
+IDUsprawiedliwienia NULL
+//Z jakiego przedmiotu
+
+13
+Usprawiedliwienia:
+IDJsprawiedliwienia
+Powód
+Sygnatura
+IDZwolnienia
+
+14
+Sale:
+IDSali
+Nazwa sali
+IDPrzedmiotu
+Atrybuty sali
+//klasa opiekująca
+Ostatni remont
+
+15
+Klasy:
+IDklasy
+Nazwa klasy
+Rok rozpoczęcia
+Profil klasy
+
+16
+Oceny:
+IDUcznia
+Ocena
+Przedmiot
+Nauczyciel
+Kiedy
+
+17
+Sprawdziany:
+IDSprawdzianu
+IDNauczyciel
+IDKLasa
+Kiedy
+Opis
+
+18
+Kartkówki:
+IDKartkówki
+IDNauczyciel
+IDKLasa
+Kiedy
+Opis
+Czy zapowiedziana
+
+19
+Egzamin (dodatkowa, jakby co)
+Nazwa egzamin
+Przedmiot
+
++
+Próbne egzaminy (dodatkowa)
+
+++
+Egzamin poprawkowe (dodatkowe)
+
+20
+Wywiadówki
+IDKlasy
+IDNauczyciel
+Kiedy
+
+21
+Koła
+IDNauczyciel
+Kiedy
+Sala
+Nazwa koła
+
++++
+Klub sportowy (dodatkowe)
+
+22
+Wycieczki szkolne
+IDNauczyciel
+IDKlasy
+Kiedy
+Gdzie
+
+23
+Typ wycieczki
+zagraniczne/w kraju
+
+24
+Szafka szkolna
+IDUcznia
+IDSzafki
+Piętro
+
+25
+Imprezy szkolne
+Data
+
+(max 28)
