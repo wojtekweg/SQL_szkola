@@ -1,0 +1,164 @@
+1
+Osoby:
+IDOsoby: int [PK]
+Imię: varchar(255)
+Nazwisko: varchar(255)
+Adres zamieszkania: varchar(255)
+Telefon: varchar(255)
+
+2
+Nauczyciele:
+IDNauczyciela: int [PK]
+Przedmiot główny: int
+Przedmiot fakulatatywny: int NULL
+Wychowawca klasy: int
+Data zatrudnienia: datetime
+Stawka: money
+
+3
+Przedmioty nauczyciela
+IDPrzedmiotu: int [PK]
+IDNauczyciela: int
+
+4
+Przedmioty
+IDPrzedmiotu: int [PK]
+Nazwa przedmiotu: varchar(255)
+
+5
+Przedmioty fakultatywne
+IDPrzedmiotu: int [PK]
+Nazwa przedmiotu: int
+Status: binary
+
+6
+Spis przedmiotów fakulatatywnych
+IDprzedmiotu: int [PK]
+Nazwa przedmiotu
+
+7
+Uczniowie:
+IDUcznia: int [PK]
+IDKlasy: int
+IDUwagi: int
+
+8
+Uwagi:
+IDUwagi: int [PK]
+IDUcznia: int
+Opis uwagi: varchar(255)
+Data uwagi: datetime
+Powaga uwagi: tinyint
+
+9
+Stypendia:
+IDStypendium: int [PK]
+IDUcznia: int
+Data początku: timedate
+Data końca: timedate
+Kwota: money
+
+10
+Dni wolne:
+Data: datetime
+Powód: varchar(255)
+
+11
+Urlopy:
+IDNauczyciela: int [PK]
+Data początku: datetime
+Data końca: datetime
+Powód: varchar(255)
+Czy płatny: binary
+
+12
+Zwolnienia:
+IDZwolnienia: int [PK]
+Data początku: datetime
+Data końca: datetime
+IDUcznia: int
+IDUsprawiedliwienia: int NULL
+
+13
+Usprawiedliwienia:
+IDUsprawiedliwienia: int [PK]
+Powód: varchar(255)
+Sygnatura lekarska: varchar(255)
+
+14
+Sale:
+IDSali: int [PK]
+Nazwa sali: varchar(255)
+IDPrzedmiotu: int
+Ostatni remont: datetime
+
+15
+Klasy:
+IDKlasy: int
+Rok rozpoczęcia: int
+Litera porządkowa: varchar(1)
+IDProfilu: int
+
+16
+Profile klas:
+IDProfilu: int
+Nazwa profilu: varchar(255)
+
+17
+Oceny:
+IDUcznia: int
+Ocena: int
+IDPrzedmiotu: int
+IDNauczyciela: int
+Data: timedate
+
+18
+Sprawdziany:
+IDSprawdzianu: int
+IDNauczyciela: int
+IDKlasy: int
+Data: datetime
+Opis: varchar(255)
+
+19
+Kartkówki:
+IDKartkówki: int
+IDNauczyciela: int
+IDKlasy: int
+Data: datetime
+Opis: varchar(255)
+Czy zapowiedziana: binary
+
+20
+Wywiadówki:
+IDKlasy: int
+IDNauczyciela: int
+Data: datetime
+
+21
+Koła:
+IDNauczyciela: int
+Data zajęć: int
+IDSali: int
+Nazwa koła: varchar(255)
+
+22
+Wycieczki szkolne:
+IDNauczyciela: int
+IDKlasy: int
+Data: datetime
+Liczba dni: int
+Miejsce: varchar(255)
+
+23
+Szafki szkolne:
+IDUcznia: int
+Numer szafki: int
+Piętro: int
+
+24
+Imprezy szkolne:
+Data: datetime
+Powód: varchar(255)
+
+(tabel 24 + 4 dodatkowe)
