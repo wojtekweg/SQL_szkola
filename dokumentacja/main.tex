@@ -71,6 +71,8 @@ Drugim problemem naszego projektu, który mógłby nie sprostać oczekiwaniom po
 
 \subsection{Możliwości}
 
+DO UZUPELNIENIA
+
 \subsection{Ograniczenia przyjęte przy projektowaniu}
 
 Nasza baza danych obsługuje jedynie oceny w postaci typu danych INT, stąd też nie są możliwe oceny cząstkowe. 
@@ -101,7 +103,7 @@ Najbardziej dynamiczną naszą tabelą będzie tabela "Oceny" - pomijając ją o
 
 \subsection{Tabele}
 
-Wymagania: 8 poprawnie zaprojektowanych tabel (na osobę).
+Wymagania projektu określały, że na każdą osobę pracującą przy projekcie wymagane jest zaimplementowanie 8 tabel, stąd też w tym rozdziale przedstawimy implementację 24 tabel.
 
 \subsubsection{Osoby}
 Jedna z podstawowych tabel bazy danych. Zawiera najistotniejsze dane o osobach uczestniczących do szkoły (nauczyciele i uczniowie) - ID, Imię, nazwisko, adres zamieszkania oraz telefon komórkowy.
@@ -610,7 +612,7 @@ INSERT INTO [Zwolnienia](DataPoczątku, DataKońca, IDUcznia, IDUsprawiedliwenia
 (2021-03-02, 2021-03-02, 2, 1)
 \end{minted}
 
- \subsubsection{Usprawiedliwienia}
+\subsubsection{Usprawiedliwienia}
 Prosta table zawierająca informacje odnośnie usprawiedliwienia dla zwolnienia ucznia. Zawiera ona IDUsprawiedliwienia, powód oraz sygnaturę lekarską potwierdzającą to usprawiedliwienie.
 
 \begin{minted}{sql}
@@ -629,15 +631,184 @@ INSERT INTO [Usprawiedliwienia](Powód, SygnaturaLekarska) VALUES
 ("Biegunka", "L/01/01")
 \end{minted}
 
-\subsection{Widoki oraz funkcje}
+\newpage
 
-Wymagania: 10 widoków lub funkcji.
+\section{Widoki oraz funkcje}
 
-\subsection{Procedury i wyzwalacze}
+Wymogi zaliczenia projektu określają 10 poprawnie zaimplementowanych widoków oraz funkcji. Poniżej przedstawiamy X (obecnie 4) widoków oraz Y (obecnie 2) funkcji.
+
+\subsection{Widoki}
+
+\subsubsection{Wyświetlanie nauczycieli}
+
+Podany widok wyświetli listę nauczycieli z informacją na temat klas, które uczą. 
+
+\begin{minted}{sql}
+CREATE VIEW wyświetl_nauczycieli AS
+SELECT A.Imię, A.Nazwisko, A.Telefon, C.RokRozpoczęcia, C.LiteraPorządkowa, D.NazwaProfilu
+FROM Osoby A JOIN Nauczyciele B
+ON A.IDOsoby = B.IDNauczyciela
+JOIN Klasy C ON B.WychowawcaKlasy = C.IDKlasy
+JOIN ProfileKlas D ON C.IDProfilu = D.IDProfilu
+\end{minted}
+
+Powyższy widok dla przykładowych danych zwraca następujące wartości:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{nauczyciele.png}
+  \caption{Widok nauczycieli}
+  \label{Widok nauczycieli}
+\end{figure}
+
+\subsubsection{Wyświetlanie sprawdzianów}
+
+Widok ten wyświetli wszystkie sprawdziany wraz z ich datą, opisem oraz informacjami na temat nauczycieli oraz klas, których dotyczyły.
+
+\begin{minted}{sql}
+CREATE VIEW wyświetl_sprawdziany AS
+SELECT A.Data, A.Opis, C.Imię AS [Imię Nauczyciela], C.Nazwisko AS [Nazwisko Nauczyciela], D.LiteraPorządkowa, D.RokRozpoczęcia, E.NazwaProfilu
+FROM Sprawdziany A JOIN Nauczyciele B
+ON A.IDnauczyciela = B.IDNauczyciela
+JOIN Osoby C ON B.IDNauczyciela = C.IDOsoby
+JOIN Klasy D ON A.IDKlasy = D.IDKlasy
+JOIN ProfileKlas E ON D.IDProfilu = E.IDProfilu
+ORDER BY E.NazwaProfilu
+OFFSET 0 ROWS
+\end{minted}
+
+Powyższy widok dla przykładowych danych zwraca następujące wartości:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{sprawdziany.png}
+  \caption{Widok sprawdzianów}
+  \label{Widok sprawdzianów}
+\end{figure}
+
+\subsubsection{Wyświetlanie kartkówek}
+
+Widok ten jest bardzo podobny do poprzedniego. Wyświetli wszystkie kartkówki wraz z ich datą, opisem oraz informacjami na temat nauczycieli oraz klas, których dotyczyły.
+
+\begin{minted}{sql}
+GO
+CREATE FUNCTION wyświetl_kartkówki (@Stan AS BIT)
+RETURNS TABLE
+AS
+RETURN
+SELECT A.Data, A.Opis, C.Imię AS [Imię Nauczyciela], C.Nazwisko AS [Nazwisko Nauczyciela], D.LiteraPorządkowa, D.RokRozpoczęcia, E.NazwaProfilu
+FROM Kartkówki A JOIN Nauczyciele B
+ON A.IDnauczyciela = B.IDNauczyciela
+JOIN Osoby C ON B.IDNauczyciela = C.IDOsoby
+JOIN Klasy D ON A.IDKlasy = D.IDKlasy
+JOIN ProfileKlas E ON D.IDProfilu = E.IDProfilu
+WHERE A.CzyZapowiedziana = @Stan
+GO
+
+--przykładowe użycia
+SELECT * FROM wyświetl_kartkówki(0)
+SELECT * FROM wyświetl_kartkówki(1)
+\end{minted}
+
+Powyższy widok dla przykładowych danych zwraca następujące wartości:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{kartkowki.png}
+  \caption{Widok kartkówek}
+  \label{Widok kartkówek}
+\end{figure}
+
+\subsubsection{Wyświetlanie uczniów}
+
+Informacje na temat uczniów szkoły mogą zostać wyświetlone za pomocą poniższego widoku, zwracając informacje na temat ich danych osobowych, klasy do której uczęszczają oraz szafek, z których korzystają.
+
+\begin{minted}{sql}
+CREATE VIEW wyświetl_uczniów AS
+SELECT A.Imię, A.Nazwisko, A.Telefon, 
+C.RokRozpoczęcia, C.LiteraPorządkowa, 
+D.NazwaProfilu, E.NumerSzafki, E.Piętro
+FROM Osoby A JOIN Uczniowie B ON A.IDOsoby = B.IDUcznia
+JOIN Klasy C ON B.IDKlasy = C.IDKlasy
+JOIN ProfileKlas D ON C.IDProfilu = D.IDProfilu
+JOIN SzafkiSzkolne E ON B.IDUcznia = E.IDUcznia
+ORDER BY C.RokRozpoczęcia, D.NazwaProfilu, C.LiteraPorządkowa
+OFFSET 0 ROWS
+\end{minted}
+
+Powyższy widok dla przykładowych danych zwraca następujące wartości:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{uczniowie.png}
+  \caption{Widok uczniów}
+  \label{Widok uczniów}
+\end{figure}
+
+\subsection{Funkcje}
+
+\subsubsection{Wypisanie uczniów danej klasy}
+
+Funkcja pobierając ID danej klasy wypisuje wszystkich jej uczniów, wyświetlając ich imiona, nazwiska, numery telefonów oraz rok rozpoczęcia nauki. 
+
+\begin{minted}{sql}
+GO
+CREATE FUNCTION dbo.wypisz_uczniow_danej_klasy (@ID AS INT)
+RETURNS TABLE
+AS
+RETURN
+SELECT O.Imię, O.Nazwisko, O.Telefon, K.RokRozpoczęcia
+FROM Osoby O JOIN Uczniowie U
+ON O.IDOsoby = U.IDUcznia
+JOIN [Klasy] K
+ON U.IDKlasy = K.IDKlasy
+WHERE U.IDKlasy = @ID
+GO
+-- przykładowe wywołanie funkcji (wypisanie danych uczniów z klasy o ID == 1):
+SELECT * FROM dbo.wypisz_uczniow_danej_klasy(1)
+\end{minted}
+
+Powyższa funkcja dla przykładowych danych i argumentu ID klasy = 1 zwraca następujące wartości:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{uczniowie_klasy.png}
+  \caption{Uczniowie klasy o ID = 1}
+  \label{Uczniowie klasy o ID = 1}
+\end{figure}
+
+\subsubsection{Wypisanie szczegółów ucznia}
+
+Funkcja pobierając ID ucznia, wypisuje jego dane osobowe, szafkę szkolną oraz stypendium. 
+
+\begin{minted}{sql}
+GO
+CREATE FUNCTION dbo.szczegoly_ucznia (@ID AS INT)
+RETURNS TABLE
+AS
+RETURN
+SELECT O.Imię, O.Nazwisko, O.Telefon, S.NumerSzafki, R.Kwota, R.DataPoczątku, R.DataKońca
+FROM Osoby O JOIN Uczniowie U
+ON O.IDOsoby = U.IDUcznia
+FULL JOIN SzafkiSzkolne S
+ON S.IDUcznia = U.IDUcznia
+FULL JOIN Stypendia R
+ON R.IDUcznia = U.IDUcznia
+WHERE U.IDUcznia = @ID
+GO
+-- przykładowe wywołanie funkcji (wypisanie danych ucznia o ID = 5):
+SELECT * FROM dbo.szczegoly_ucznia(5)
+\end{minted}
+
+Powyższa funkcja dla przykładowych danych i argumentu ID ucznia = 5 zwraca następujące wartości:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{szczegoly_ucznia.png}
+  \caption{Uczeń o ID = 5}
+  \label{Uczeń o ID = 5}
+\end{figure}
+
+
+\newpage
+
+\section{Procedury i wyzwalacze}
 
 Wymagania: baza danych powinna być odpowiednio oprogramowana z wykorzystaniem procedur składowanych i wyzwalaczy (co najmniej po 5 procedur i po 5 wyzwalaczy).
-
-
 
 
 
