@@ -648,7 +648,7 @@ INSERT INTO [Usprawiedliwienia](Powód, SygnaturaLekarska) VALUES
 
 \section{Widoki oraz funkcje}
 
-Wymogi zaliczenia projektu określają 10 poprawnie zaimplementowanych widoków oraz funkcji. Poniżej przedstawiamy X (obecnie 4) widoków oraz Y (obecnie 2) funkcji.
+Wymogi zaliczenia projektu określają 10 poprawnie zaimplementowanych widoków oraz funkcji. Poniżej przedstawiamy pięć widoków oraz pięć funkcji.
 
 \subsection{Widoki}
 
@@ -697,38 +697,6 @@ Powyższy widok dla przykładowych danych zwraca następujące wartości:
   \label{Widok sprawdzianów}
 \end{figure}
 
-\subsubsection{Wyświetlanie kartkówek}
-
-Widok ten jest bardzo podobny do poprzedniego. Wyświetli wszystkie kartkówki wraz z ich datą, opisem oraz informacjami na temat nauczycieli oraz klas, których dotyczyły.
-
-\begin{minted}{sql}
-GO
-CREATE FUNCTION wyświetl_kartkówki (@Stan AS BIT)
-RETURNS TABLE
-AS
-RETURN
-SELECT A.Data, A.Opis, C.Imię AS [Imię Nauczyciela], C.Nazwisko AS [Nazwisko Nauczyciela], D.LiteraPorządkowa, D.RokRozpoczęcia, E.NazwaProfilu
-FROM Kartkówki A JOIN Nauczyciele B
-ON A.IDnauczyciela = B.IDNauczyciela
-JOIN Osoby C ON B.IDNauczyciela = C.IDOsoby
-JOIN Klasy D ON A.IDKlasy = D.IDKlasy
-JOIN ProfileKlas E ON D.IDProfilu = E.IDProfilu
-WHERE A.CzyZapowiedziana = @Stan
-GO
-
---przykładowe użycia
-SELECT * FROM wyświetl_kartkówki(0)
-SELECT * FROM wyświetl_kartkówki(1)
-\end{minted}
-
-Powyższy widok dla przykładowych danych zwraca następujące wartości:
-
-\begin{figure}[h]
-  \includegraphics[width=\linewidth]{kartkowki.png}
-  \caption{Widok kartkówek}
-  \label{Widok kartkówek}
-\end{figure}
-
 \subsubsection{Wyświetlanie uczniów}
 
 Informacje na temat uczniów szkoły mogą zostać wyświetlone za pomocą poniższego widoku, zwracając informacje na temat ich danych osobowych, klasy do której uczęszczają oraz szafek, z których korzystają.
@@ -752,6 +720,54 @@ Powyższy widok dla przykładowych danych zwraca następujące wartości:
   \includegraphics[width=\linewidth]{uczniowie.png}
   \caption{Widok uczniów}
   \label{Widok uczniów}
+\end{figure}
+
+\subsubsection{Trzy największe stypendia}
+
+Widok wyświetlający trzy największe kwoty miesięczne ze wszystkich stypendiów w bazie, wyświetlając od największego do najmniejszego. 
+
+\begin{minted}{sql}
+GO
+CREATE VIEW najwyzsze_stypendia
+AS
+SELECT TOP 3 S.Kwota FROM Stypendia S
+ORDER BY S.Kwota DESC
+GO
+
+--wywołanie widoku
+SELECT * FROM najwyzsze_stypendia
+\end{minted}
+
+\begin{figure}[h]
+    \begin{center}
+      \includegraphics[width=0.5\linewidth]{najwyzsze_stypendia.png}
+      \caption{Trzy największe stypendia w naszej testowej bazie}
+      \label{Trzy największe stypendia w naszej testowej bazie}
+    \end{center}
+\end{figure}
+
+\subsubsection{Ostatnio pisany sprawdzian}
+
+Sprawdzenie szczegółów ostatnio dodanego do bazy sprawdziany można wykonać za pomocą następującego widoku:
+
+\begin{minted}{sql}
+GO
+CREATE VIEW najnowszy_sprawdzian
+AS
+SELECT TOP 1 * FROM Sprawdziany AS S
+ORDER BY S.Data DESC
+GO
+
+--użycie widoku
+SELECT * FROM najnowszy_sprawdzian
+\end{minted}
+
+\begin{figure}[h]
+    \begin{center}
+      \includegraphics[width=\linewidth]{najnowszy_sprawdzian.png}
+      \caption{Ostatnio dodany sprawdzian w testowej bazie.}
+      \label{Ostatnio dodany sprawdzian w testowej bazie.}
+    \end{center}
 \end{figure}
 
 \subsection{Funkcje}
@@ -816,6 +832,90 @@ Powyższa funkcja dla przykładowych danych i argumentu ID ucznia = 5 zwraca nas
   \label{Uczeń o ID = 5}
 \end{figure}
 
+\subsubsection{Wyświetlanie kartkówek}
+
+Funkcja ta jest bardzo podobna do widoku "Wyświetlanie sprawdzianów". Wyświetli wszystkie kartkówki wraz z ich datą, opisem oraz informacjami na temat nauczycieli oraz klas, których dotyczyły.
+
+\begin{minted}{sql}
+GO
+CREATE FUNCTION wyświetl_kartkówki (@Stan AS BIT)
+RETURNS TABLE
+AS
+RETURN
+SELECT A.Data, A.Opis, C.Imię AS [Imię Nauczyciela], C.Nazwisko AS [Nazwisko Nauczyciela], D.LiteraPorządkowa, D.RokRozpoczęcia, E.NazwaProfilu
+FROM Kartkówki A JOIN Nauczyciele B
+ON A.IDnauczyciela = B.IDNauczyciela
+JOIN Osoby C ON B.IDNauczyciela = C.IDOsoby
+JOIN Klasy D ON A.IDKlasy = D.IDKlasy
+JOIN ProfileKlas E ON D.IDProfilu = E.IDProfilu
+WHERE A.CzyZapowiedziana = @Stan
+GO
+
+--przykładowe użycia
+SELECT * FROM wyświetl_kartkówki(0)
+SELECT * FROM wyświetl_kartkówki(1)
+\end{minted}
+
+Powyższe użycia dla przykładowych danych zwraca następujące wartości:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{kartkowki.png}
+  \caption{Widok kartkówek}
+  \label{Widok kartkówek}
+\end{figure}
+
+\subsubsection{Wypisanie testów klasy}
+
+Ponieważ nasza baza danych przechowuje osobno sprawdziany i kartkówki każdej z klasy zaistniała potrzeba implementacji funkcji, która wyświetli zarówno testy, jak i kartkówki dla klasy o podanym przez użytkownika ID. 
+
+\begin{minted}{sql}
+GO
+CREATE FUNCTION dbo.testy_klasy (@ID AS INT)
+RETURNS TABLE
+AS
+RETURN
+(
+    SELECT S.Data, S.Opis FROM Sprawdziany S
+    WHERE @ID = S.IDKlasy
+)
+UNION ALL
+(
+    SELECT R.Data, R.Opis FROM Kartkówki R
+    WHERE @ID = R.IDKlasy
+)
+GO
+-- przykładowe wywołanie funkcji (wypisanie testów dla klasy o ID = 2):
+SELECT * FROM dbo.testy_klasy(2)
+\end{minted}
+
+Powyższy wywołanie zwróci dla testowych danych następujący rezultat:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{testy_klasy.png}
+  \caption{Testy klasy o ID = 2}
+  \label{Testy klasy o ID = 2}
+\end{figure}
+
+\subsubsection{Wypisanie nauczycieli o zarobkach większych niż podany parametr}
+
+Ta funkcja za zadanie ma poinformować administrację o liczbie nauczycieli, których zarobki są powyżej określonej kwoty. 
+
+\begin{minted}{sql}
+CREATE FUNCTION dbo.liczba_nauczycieli_o_zarobkach
+(@Zarobki MONEY)
+RETURNS INT
+AS BEGIN
+RETURN (
+    SELECT COUNT(N.IDNauczyciela)
+    FROM Nauczyciele N
+    WHERE N.Stawka >= @Zarobki
+)
+END
+GO
+
+--poniższe wywołanie dla przykładowych danych zwróci liczbę 3
+SELECT dbo.liczba_nauczycieli_o_zarobkach(4000)
+\end{minted}
 
 \newpage
 
@@ -949,6 +1049,35 @@ Powyższy "INSERT" wywoła następujący błąd:
   \includegraphics[width=\linewidth]{impreza_wolne.png}
   \caption{Błąd, wyświetlający się jeśli dodamy impreze w dzień nauki.}
   \label{Błąd, wyświetlający się jeśli dodamy impreze w dzień nauki.}
+\end{figure}
+
+\subsubsection{Średnia ocen uczniów po dodaniu oceny}
+
+Ze względu na rzadkie wstawianie nowych ocen do naszej bazy danych możemy pozwolić sobie na implementację wyzwalacza, który po każdej nowo dodanej ocenie będzie wyliczał średnią wszystkich ocen wszystkich uczniów.
+
+\begin{minted}{sql}
+CREATE TRIGGER srednia_ocen ON Oceny
+AFTER INSERT
+AS
+BEGIN
+    SELECT AVG(O.Ocena) AS [Srednia], O.IDUcznia 
+    FROM Oceny AS O
+    GROUP BY O.IDUcznia
+END
+
+--przykładowe dodanie oceny, zmieniające średnią
+INSERT INTO [Oceny]
+(IDUcznia, Ocena, IDPrzedmiotu, IDNauczyciela, Data)
+VALUES
+(1, 1, 2, 4, GETDATE())
+\end{minted}
+
+\begin{figure}[h]
+\begin{center}
+  \includegraphics[width=0.5\linewidth]{srednia_ocen.png}
+  \caption{Niestety, uczniowie naszej testowej bazy danych nie mogą pochwalić się zbyt dobrymi osiągnięciami w nauce...}
+  \label{Niestety, uczniowie naszej testowej bazy danych nie mogą pochwalić się zbyt dobrymi osiągnięciami w nauce...}
+  \end{center}
 \end{figure}
 
 \end{document}
