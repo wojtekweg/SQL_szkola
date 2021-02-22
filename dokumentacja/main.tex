@@ -40,7 +40,7 @@
 
 %Ściana tekstu
 
-\title{Pojekt szkolnej bazy danych}
+\title{Projekt szkolnej bazy danych}
 \author{Jakub Kołodziejczyk, Konrad Nowak, Wojciech Węgrzyn}
 
 
@@ -88,12 +88,18 @@ Najbardziej dynamiczną naszą tabelą będzie tabela "Oceny" - pomijając ją o
 \newpage
 \section{Schematy}
 
-\subsection{Diagram ER}
+\subsection{Diagramy ER}
 
-\begin{figure}
+\begin{figure}[h]
   \includegraphics[width=\linewidth]{diagram_ER.png}
   \caption{Diagram ER}
   \label{Diagram ER}
+\end{figure}
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{diagram_ER_SSMS.png}
+  \caption{Diagram ER (SSMS)}
+  \label{Diagram ER (SSMS)}
 \end{figure}
 
 \subsection{Schemat bazy danych}
@@ -109,78 +115,73 @@ Wymagania projektu określały, że na każdą osobę pracującą przy projekcie
 Jedna z podstawowych tabel bazy danych. Zawiera najistotniejsze dane o osobach uczestniczących do szkoły (nauczyciele i uczniowie) - ID, Imię, nazwisko, adres zamieszkania oraz telefon komórkowy.
 
 \begin{minted}{sql}
---utworzenie tabeli
 CREATE TABLE Osoby
 (
-	IDOsoby INT IDENTITY(1,1) PRIMARY KEY,
-	Imię VARCHAR(255) NOT NULL,
-	Nazwisko VARCHAR(255) NOT NULL,
-	Telefon VARCHAR(255)
+    IDOsoby INT IDENTITY(1,1) PRIMARY KEY,
+    Imię VARCHAR(255) NOT NULL,
+    Nazwisko VARCHAR(255) NOT NULL,
+    Telefon VARCHAR(255)
 )
 
---wstawienie przykładowych osób
 INSERT INTO [Osoby](Imię, Nazwisko, Telefon) VALUES
 ('Wojciech', 'Węgrzyn', '+48 723 147 680'),
 ('Konrad', 'Nowak', NULL),
 ('Jakub', 'Łukasiewicz', NULL),
-('John',  'Grady', '+01 134 423 423'),
+('John', 'Grady', '+01 134 423 423'),
 ('Adrian', 'Antkiewicz', '+48 534 322'),
 ('Michał', 'Gem', '+18 332 03 42'),
-('Piotr', 'Niemiec', '+12 890 43 54'), 
-('Edward', 'Szczypka', '+12 345 54 23'), 
-('Jadwiga', 'Kowal', NULL), 
-('Iga', 'Świątek', NULL), 
+('Piotr', 'Niemiec', '+12 890 43 54'),
+('Edward', 'Szczypka', '+12 345 54 23'),
+('Jadwiga', 'Kowal', NULL),
+('Iga', 'Świątek', NULL),
 ('Andrzej', 'Gołota', '+48 543 134 543')
-
 \end{minted}
 
 \subsubsection{Nauczyciele}
  Jedna z podstawowych tabel bazy danych. Zawiera informacje o przedmiotach, jakie dany nauczyciel prowadzi (musi prowadzić jeden przedmiot główny, ale nie musi prowadzić fakultatywnego), jakiej klasy jest wychowawcą, kiedy został zatrudniony oraz ile zarabia miesięcznie.
  
  \begin{minted}{sql}
- --utworzenie tabeli
 CREATE TABLE Nauczyciele
 (
-	IDNauczyciela INT REFERENCES Osoby(IDOsoby) 
-	ON UPDATE CASCADE ON DELETE CASCADE PRIMARY KEY,
-	WychowawcaKlasy INT REFERENCES Nauczyciele(IDNauczyciela),
-	ON UPDATE CASCADE ON DELETE CASCADE PRIMARY KEY,
-	DataZatrudnienia DATETIME,
-	Stawka MONEY
+    IDNauczyciela INT REFERENCES Osoby(IDOsoby)
+    ON UPDATE CASCADE ON DELETE CASCADE PRIMARY KEY,
+    WychowawcaKlasy INT REFERENCES Klasy(IDKlasy),
+    DataZatrudnienia DATETIME,
+    Stawka MONEY
 )
 
---wstawianie nauczycieli
 INSERT INTO [Nauczyciele]
-(IDNauczyciela, WychowawcaKlasy, DataZatrudnienia, Stawka) 
+(IDNauczyciela, WychowawcaKlasy, DataZatrudnienia, Stawka)
 VALUES
 (4, NULL, GETDATE(), 5400),
-(7, NULL, 2001-10-11, 15000),
-(8, 1, 2013-08-01, 2300), 
-(9, 2, 2020-01-01, 4500)
-
- \end{minted}
+(6, NULL, '20120802', 3000),
+(7, NULL, '20011011', 15000),
+(8, 1, '20130801', 2300),
+(9, 2, '20200101', 4500)
+\end{minted}
  
 \subsubsection{Uczniowie}
 Tabela przyporządkowująca danemu uczniowi klasę, do której chodzi, oraz uwagę, jaką dostał.
  
 \begin{minted}{sql}
  --utworzenie tabeli
- CREATE TABLE Uczniowie
+CREATE TABLE Uczniowie
 (
-	IDUcznia INT REFERENCES Osoby(IDOsoby) ON UPDATE CASCADE ON DELETE CASCADE PRIMARY KEY,
-	IDKlasy INT REFERENCES Klasy(IDKlasy) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-	IDUwagi INT REFERENCES Uwagi(IDUwagi) ON UPDATE CASCADE ON DELETE CASCADE
+    IDUcznia INT REFERENCES Osoby(IDOsoby) 
+    ON UPDATE CASCADE ON DELETE CASCADE PRIMARY KEY,
+    IDKlasy INT REFERENCES Klasy(IDKlasy) 
+    ON UPDATE CASCADE ON DELETE CASCADE NOT NULL
 )
 
 --wstawienie uczniów
-INSERT INTO [Uczniowie] (IDUcznia, IDKlasy, IDUwagi) VALUES
-(1, 1, NULL),
-(2, 1, NULL),
-(3, 1, NULL),
-(5, 2, 1),
-(6, 2, 2), 
-(10, 3, NULL), 
-(11, 3, NULL)
+INSERT INTO [Uczniowie] (IDUcznia, IDKlasy) VALUES
+(1, 1),
+(2, 1),
+(3, 1),
+(5, 2),
+(6, 2),
+(10, 3),
+(11, 3)
 \end{minted}
  
  \subsubsection{Oceny}
@@ -190,23 +191,22 @@ Tabela zawierająca informację o ocenach, które dostał dany uczeń - jej wart
 --utworzenie tabeli
 CREATE TABLE Oceny
 (
-	IDUcznia INT REFERENCES Uczniowie(IDUcznia) 
-	ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-	Ocena INT NOT NULL,
-	IDPrzedmiotu INT REFERENCES Przedmioty(IDPrzedmiotu) 
-	ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) 
-	ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-	Data DATETIME
+    IDOceny INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    IDUcznia INT REFERENCES Uczniowie(IDUcznia),
+    Ocena INT NOT NULL,
+    IDPrzedmiotu INT REFERENCES SpisPrzedmiotów(IDPrzedmiotu)
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) NOT NULL,
+    Data DATETIME
 )
 
 --wstawianie ocen
 INSERT INTO [Oceny] (IDUcznia, Ocena, IDPrzedmiotu, IDNauczyciela, Data) VALUES
 (1, 4, 1, 4, GETDATE()),
-(1, 5, 1, 7, 2021-02-16),
-(2, 2, 2, 7, 2021-02-16),
+(1, 5, 1, 7, '20210216'),
+(2, 2, 2, 7, '20210216'),
 (3, 3, 2, 8, GETDATE()),
-(10, 2, 3, 9, 2021-01-05)
+(10, 2, 3, 9, '20210105')
 \end{minted}
 
 \subsubsection{Przedmioty}
@@ -216,19 +216,20 @@ INSERT INTO [Oceny] (IDUcznia, Ocena, IDPrzedmiotu, IDNauczyciela, Data) VALUES
 --utworzenie tabeli
 CREATE TABLE Przedmioty
 (
-	IDPrzedmiotu INT IDENTITY(1,1) NOT NULL,
-	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) 
-	ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    IDtemp INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    IDPrzedmiotu INT REFERENCES SpisPrzedmiotów(IDPrzedmiotu) NOT NULL,
+    IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela)
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL
 )
 
 --wstawianie przedmiotów
-INSERT INTO [Przedmioty](IDNauczyciela) VALUES
-(4),
-(6), 
-(4),
-(6), 
-(4),
-(4) --TUTAJ JEST DO_SPRAWDZENIA
+INSERT INTO [Przedmioty](IDPrzedmiotu, IDNauczyciela) VALUES
+(1,4),
+(2,6),
+(3,4),
+(4,6),
+(5,4),
+(6,4)
 \end{minted}
 
 \subsubsection{Przedmioty fakultatywne}
@@ -238,15 +239,18 @@ INSERT INTO [Przedmioty](IDNauczyciela) VALUES
 --utworzenie tabeli
 CREATE TABLE PrzedmiotyFakultatywne
 (
-	IDPrzedmiotuFakultatywnego INT IDENTITY(1,1),
-	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) 
-	ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    IDtemp INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
+    IDPrzedmiotuFakultatywnego INT REFERENCES
+        SpisPrzedmiotówFakultatywnych(IDPrzedmiotuFakultatywnego),
+    IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela)
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL
 )
 
 --wstawianie przedmiotów fakultatywnych
-INSERT INTO [PrzedmiotyFakultatywne](IDNauczyciela) VALUES
-(4),
-(6) --TUTAJ JEST DO_SPRAWDZENIA
+INSERT INTO [PrzedmiotyFakultatywne]
+(IDPrzedmiotuFakultatywnego, IDNauczyciela) VALUES
+(7,4),
+(8,6)
 \end{minted}
 
 \subsubsection{Spis przedmiotów}
@@ -256,18 +260,18 @@ Prosta tabela przechowująca spis przedmiotów obowiązkowych z ich nazwami.
 --utworzenie tabeli
 CREATE TABLE SpisPrzedmiotów
 (
-	IDPrzedmiotu INT PRIMARY KEY,
-	NazwaPrzedmiotu VARCHAR(255)
+    IDPrzedmiotu INT PRIMARY KEY,
+    NazwaPrzedmiotu VARCHAR(255)
 )
 
 --wstawianie przedmiotów
 INSERT INTO [SpisPrzedmiotów](IDPrzedmiotu, NazwaPrzedmiotu) VALUES
-(1, "Matematyka"),
-(2, "Informatyka"),
-(3, "Chemia"),
-(4, "Język Polski"),
-(5, "Biologia"),
-(6, "Fizyka")
+(1, 'Matematyka'),
+(2, 'Informatyka'),
+(3, 'Chemia'),
+(4, 'Język Polski'),
+(5, 'Biologia'),
+(6, 'Fizyka')
 \end{minted}
 
 \subsubsection{Spis przedmiotów fakultatywnych}
@@ -277,14 +281,15 @@ Prosta tabela przechowująca spis przedmiotów fakultatywnych z ich nazwami.
 --utworzenie tabeli
 CREATE TABLE SpisPrzedmiotówFakultatywnych
 (
-	IDPrzedmiotuFakultatywnego INT PRIMARY KEY,
-	NazwaPrzedmiotu VARCHAR(255)
+    IDPrzedmiotuFakultatywnego INT PRIMARY KEY,
+    NazwaPrzedmiotu VARCHAR(255)
 )
 
 --wstawianie przedmiotów fakultatywnych
-INSERT INTO [SpisPrzedmiotów](IDPrzedmiotu, NazwaPrzedmiotu) VALUES
-(7, "Etyka"),
-(8, "Religia"),
+INSERT INTO [SpisPrzedmiotówFakultatywnych]
+(IDPrzedmiotuFakultatywnego, NazwaPrzedmiotu) VALUES
+(7, 'Etyka'),
+(8, 'Religia')
 \end{minted}
 
  \subsubsection{Sprawdziany}
@@ -294,20 +299,20 @@ Tabela zawierająca informację o sprawdzianach przeprowadzanych w szkole. Przec
 --utworzenie tabeli
 CREATE TABLE Sprawdziany
 (
-	IDKartkówki INT IDENTITY(1,1) PRIMARY KEY,
-	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) 
-	ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-	IDKlasy INT REFERENCES Klasy(IDKlasy) 
-	ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-	Data DATETIME,
-	Opis VARCHAR(255),
+    IDSprawdzianu INT IDENTITY(1,1) PRIMARY KEY,
+    IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela)
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    IDKlasy INT REFERENCES Klasy(IDKlasy)
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    Data DATETIME,
+    Opis VARCHAR(255)
 )
 
 --wstawianie sprawdzianu
-INSERT INTO [Sprawdziany](IDNauczycielam IDKlasy, Data, Opis) VALUES
-(4, 1, 2021-10-12, "Rodziały 1-6"), 
-(8, 2, 2020-01-10, "Cały zakres materiału"),
-(9, 2, 2021-10-29, "Rodziały 7-9"), 
+INSERT INTO [Sprawdziany](IDNauczyciela, IDKlasy, Data, Opis) VALUES
+(4, 1, '20211012', 'Rodziały 1-6'),
+(8, 2, '20200110', 'Cały zakres materiału'),
+(9, 2, '20211029', 'Rodziały 7-9')
 \end{minted}
 
  \subsubsection{Kartkówki}
@@ -317,20 +322,20 @@ Tabela zwierająca informację o kartkówkach przeprowadzanych przez danego nauc
 --utworzenie tabeli
 CREATE TABLE Kartkówki
 (
-	IDKartkówki INT IDENTITY(1,1) PRIMARY KEY,
-	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) 
-	ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-	IDKlasy INT REFERENCES Klasy(IDKlasy) 
-	ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-	Data DATETIME,
-	Opis VARCHAR(255),
-	CzyZapowiedziana BINARY
+    IDKartkówki INT IDENTITY(1,1) PRIMARY KEY,
+    IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela)
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    IDKlasy INT REFERENCES Klasy(IDKlasy)
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    Data DATETIME,
+    Opis VARCHAR(255),
+    CzyZapowiedziana BIT
 )
 
 --wstawianie kartkówek
-INSERT INTO [Kartkówki](IDNauczycielam IDKlasy, Data, Opis, CzyZapowiedziana) VALUES
-(4, 1, GETDATE(), "Niezapowiedziana kartkówka z poprzedniej lekcji", NO), 
-(8, 2, 2020-01-10, "Poprzednie 3 tematy", YES)
+INSERT INTO [Kartkówki](IDNauczyciela, IDKlasy, Data, Opis, CzyZapowiedziana) VALUES
+(4, 1, GETDATE(), 'Niezapowiedziana kartkówka z poprzedniej lekcji', 0),
+(8, 2, '20200110', 'Poprzednie 3 tematy', 1)
 \end{minted}
 
  \subsubsection{Uwagi}
@@ -340,24 +345,20 @@ Tabela poświęcona uwagom ucznia. Zawiera IDUcznia, który dostał uwagę, kró
 --utworzenie tabeli
 CREATE TABLE Uwagi
 (
-	IDUwagi INT IDENTITY(1,1) PRIMARY KEY,
-	IDUcznia INT REFERENCES Uczniowie(IDUcznia) ON UPDATE CASCADE ON DELETE NOT NULL,
-	OpisUwagi VARCHAR(255),
-	DataUwagi DATETIME,
-	PowagaUwagi TINYINT NOT NULL
+    IDUwagi INT IDENTITY(1,1) PRIMARY KEY,
+    IDUcznia INT REFERENCES Uczniowie(IDUcznia) 
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    OpisUwagi VARCHAR(255),
+    DataUwagi DATETIME,
+    PowagaUwagi TINYINT NOT NULL
 )
-
---wstawianie kartkówek
-INSERT INTO [Kartkówki](IDNauczycielam IDKlasy, Data, Opis, CzyZapowiedziana) VALUES
-(4, 1, GETDATE(), "Niezapowiedziana kartkówka z poprzedniej lekcji", NO), 
-(8, 2, 2020-01-10, "Poprzednie 3 tematy", YES)
 
 --dodawanie uwag
 INSERT INTO [Uwagi](IDUcznia, OpisUwagi, DataUwagi, PowagaUwagi) VALUES
-(1, 'Bujał się na krześle', GETDATE(), 1), 
-(1, 'Rozmawiał na lekcji', 2021-03-02, 1), 
-(2, 'Ściągał na teście', GETDATE(), 2), 
-(3, 'Pobił kolegę', 2021-04-11, 3)
+(1, 'Bujał się na krześle', GETDATE(), 1),
+(1, 'Rozmawiał na lekcji', '20210302', 1),
+(2, 'Ściągał na teście', GETDATE(), 2),
+(3, 'Pobił kolegę', '20210411', 3)
 \end{minted}
 
  \subsubsection{Stypendia}
@@ -367,18 +368,19 @@ Tabela poświęcona stypendium, które dostają najlepsi uczniowie. Zawiera IDUc
 --utworzenie tabeli
 CREATE TABLE Stypendia
 (
-	IDStypendium INT IDENTITY(1,1) PRIMARY KEY,
-	IDUcznia INT REFERENCES Uczniowie(IDUcznia) ON UPDATE CASCADE ON DELETE NOT NULL,
-	DataPoczątku DATETIME,
-	DataKońca DATETIME,
-	Kwota MONEY
+    IDStypendium INT IDENTITY(1,1) PRIMARY KEY,
+    IDUcznia INT REFERENCES Uczniowie(IDUcznia) 
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    DataPoczątku DATETIME,
+    DataKońca DATETIME,
+    Kwota MONEY
 )
 
 --przyznanie stypendium 
 INSERT INTO [Stypendia](IDUcznia, DataPoczątku, DataKońca, Kwota) VALUES
-(1, 2020-09-01, 2021-06-30, 500), 
-(2, 2019-09-01, 2020-06-30, 1000),
-(5, 2019-09-01, 2020-06-30, 200)
+(1, '20200901', '20210630', 500),
+(2, '20190901', '20200630', 1000),
+(5, '20190901', '20200630', 200)
 \end{minted}
 
  \subsubsection{Sale}
@@ -388,19 +390,20 @@ Informacja zawierająca informację o salach znajdujących się w szkole. Każda
 --utworzenie tabeli
 CREATE TABLE Sale
 (
-	IDSali INT IDENTITY(1,1) PRIMARY KEY,
-	NazwaSali VARCHAR(255),
-	IDPrzedmiotu INT REFERENCES Przedmioty(IDPrzedmiotu) ON UPDATE CASCADE ON DELETE CASCADE,
-	OstatniRemont DATETIME
+    IDSali INT IDENTITY(1,1) PRIMARY KEY,
+    NazwaSali VARCHAR(255),
+    IDPrzedmiotu INT REFERENCES SpisPrzedmiotów(IDPrzedmiotu) 
+        ON UPDATE CASCADE ON DELETE CASCADE,
+    OstatniRemont DATETIME
 )
 
 --dodawanie sal
 INSERT INTO [Sale](NazwaSali, IDPrzedmiotu, OstatniRemont) VALUES
-("23A", 1, 1993-03-04),
-("1A", 2, 1895-02-13),
-("1B, 3, GETDATE()),
-("2", NULL, 2010-10-11),
-("Świetlica", NULL, 2010-05-23)
+('23A', 1, '19930304'),
+('1A', 2, '18950213'),
+('1B', 3, GETDATE()),
+('2', NULL, '20101011'),
+('Świetlica', NULL, '20100523')
 \end{minted}
 
  \subsubsection{Klasy}
@@ -410,10 +413,11 @@ Tabela zawierająca klasy uczniów uczęszczających do szkoły. Tabela zawiera 
 --utworzenie tabeli
 CREATE TABLE Klasy
 (
-	IDKlasy INT IDENTITY(1,1) PRIMARY KEY,
-	RokRozpoczęcia INT NOT NULL,
-	LiteraPorządkowa VARCHAR(1),
-	IDProfilu INT REFERENCES ProfileKlas(IDProfilu) ON UPDATE CASCADE ON DELETE NOT NULL
+    IDKlasy INT IDENTITY(1,1) PRIMARY KEY,
+    RokRozpoczęcia INT NOT NULL,
+    LiteraPorządkowa VARCHAR(1),
+    IDProfilu INT REFERENCES ProfileKlas(IDProfilu) 
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL
 )
 
 --dodanie klasy
@@ -425,7 +429,6 @@ INSERT INTO [Klasy](RokRozpoczęcia, LiteraPorządkowa, IDProfilu) VALUES
 (2017, NULL, 3)
 \end{minted}
 
-
  \subsubsection{Profile klas}
 Mała tabela zawierające IDProfilu oraz nazwę profilu klas w szkole.
  
@@ -433,8 +436,8 @@ Mała tabela zawierające IDProfilu oraz nazwę profilu klas w szkole.
 --utworzenie tabeli
 CREATE TABLE ProfileKlas
 (
-	IDProfilu INT IDENTITY(1,1) PRIMARY KEY,
-	NazwaProfilu VARCHAR(255)
+    IDProfilu INT IDENTITY(1,1) PRIMARY KEY,
+    NazwaProfilu VARCHAR(255)
 )
 
 --dodanie profilów klas
@@ -451,19 +454,19 @@ Prosta tabela zawierająca datę oraz informację dotyczących dni wolnych podcz
 --utworzenie tabeli
 CREATE TABLE DniWolne
 (
-	Data DATETIME,
-	Powód VARCHAR(255)
+    Data DATETIME,
+    Powód VARCHAR(255)
 )
 
 --tworzenie dni wolnych
 INSERT INTO [DniWolne](Data, Powód) VALUES
-(2020-11-11, 'Dzień Niepodległości'),
-(2020-12-23, 'Święta Bożego Narodzenia'),
-(2020-12-24, 'Święta Bożego Narodzenia'),
-(2020-12-25, 'Święta Bożego Narodzenia'),
-(2020-12-26, 'Święta Bożego Narodzenia'),
-(2020-12-31, 'Sylwester'),
-(2021-01-01, 'Nowy Rok')
+('20201111', 'Dzień Niepodległości'),
+('20201223', 'Święta Bożego Narodzenia'),
+('20201224', 'Święta Bożego Narodzenia'),
+('20201225', 'Święta Bożego Narodzenia'),
+('20201226', 'Święta Bożego Narodzenia'),
+('20201231', 'Sylwester'),
+('20210101', 'Nowy Rok')
 \end{minted}
 
  \subsubsection{Wywiadówki}
@@ -473,17 +476,19 @@ Tabela przechowująca dane o wywiadówkach przeprowadzanych w trakcie roku szkol
 --utworzenie tabeli
 CREATE TABLE Wywiadówki
 (
-	IDKlasy INT REFERENCES Klasy(IDKlasy) ON UPDATE CASCADE ON DELETE NOT NULL,
-	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) ON UPDATE CASCADE ON DELETE,
+	IDKlasy INT REFERENCES Klasy(IDKlasy) 
+	    ON UPDATE CASCADE ON DELETE NOT NULL,
+	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) 
+	    ON UPDATE CASCADE ON DELETE,
 	Data DATETIME
 )
 
 --dodanie wywiadówki
 INSERT INTO [Wywiadówki](IDKlasy, IDNauczyciela, DATA) VALUES
-(1, 4, 2020-10-12),
-(2, 8, 2020-12-12),
-(3, 4, 2021-01-20),
-(4, 9, 2021-02-10)
+(1, 4, '20201012'),
+(2, 8, '20201212'),
+(3, 4, '20210120'),
+(4, 9, '20210210')
 \end{minted}
 
  \subsubsection{Koła}
@@ -493,16 +498,18 @@ Tabela przechowująca informacje odnośnie kół zainteresowań w szkole. Zawier
 --utworzenie tabeli
 CREATE TABLE Koła
 (
-	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) ON UPDATE CASCADE ON DELETE NOT NULL,
+	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) 
+	    ON UPDATE CASCADE ON DELETE NOT NULL,
 	DataZajęć INT NOT NULL,
-	IDSali INT REFERENCES Sale(IDSali) ON UPDATE CASCADE ON DELETE NOT NULL,
+	IDSali INT REFERENCES Sale(IDSali) 
+	    ON UPDATE CASCADE ON DELETE NOT NULL,
 	NazwaKoła VARCHAR(255) NOT NULL
 )
 
 --wstawianie sal
 INSERT INTO [Koła](IDNauczyciela, DataZajęć, IDSali, NazwaKoła) VALUES
-(4, 2021-02-10, 1, 'Koło Informatyczne'),
-(4, 2021-02-12, 1, 'Koło Matematyczne')
+(4, '20210210', 1, 'Koło Informatyczne'),
+(4, '20210212', 1, 'Koło Matematyczne')
 \end{minted}
 
  \subsubsection{Wycieczki szkolne}
@@ -511,21 +518,23 @@ INSERT INTO [Koła](IDNauczyciela, DataZajęć, IDSali, NazwaKoła) VALUES
 --utworzenie tabeli
 CREATE TABLE WycieczkiSzkolne
 (
-	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) ON UPDATE CASCADE ON DELETE NOT NULL,
-	IDKlasy INT REFERENCES Klasy(IDKlasy) ON UPDATE CASCADE ON DELETE NOT NULL,
-	Data DATETIME,
-	LiczbaDni INT,
-	Miejsce VARCHAR(255)
+    IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) 
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    IDKlasy INT REFERENCES Klasy(IDKlasy) 
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    Data DATETIME,
+    LiczbaDni INT,
+    Miejsce VARCHAR(255)
 )
 
 --wstawianie wycieczek
 INSERT INTO [WycieczkiSzkolne](IDNauczyciela, IDKlasy, Data, LiczbaDni, Miejsce) VALUES
-(4, 1, 2020-10-10, 5, 'Zagrzeb'),
-(4, 2, 2020-12-01, 2, 'Kraków'),
-(8, 1, 2021-01-02, 1, 'Warszawa'),
-(8, 3, 2020-10-20, 4, 'Berlin'),
-(9, 2, 2019-10-12, 3, 'Lwów'),
-(9, 1, 2019-12-30, 1, 'Zakopane')
+(4, 1, '20201010', 5, 'Zagrzeb'),
+(4, 2, '20201201', 2, 'Kraków'),
+(8, 1, '20210102', 1, 'Warszawa'),
+(8, 3, '20201020', 4, 'Berlin'),
+(9, 2, '20191012', 3, 'Lwów'),
+(9, 1, '20191230', 1, 'Zakopane')
 \end{minted}
 
  \subsubsection{Szafki szkolne}
@@ -535,9 +544,10 @@ INSERT INTO [WycieczkiSzkolne](IDNauczyciela, IDKlasy, Data, LiczbaDni, Miejsce)
 --utworzenie tabeli
 CREATE TABLE SzafkiSzkolne
 (
-	IDUcznia INT REFERENCES Uczniowie(IDUcznia) ON UPDATE CASCADE ON DELETE NOT NULL,
-	NumerSzafki INT PRIMARY KEY,
-	Piętro INT
+    IDUcznia INT REFERENCES Uczniowie(IDUcznia) 
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    NumerSzafki INT PRIMARY KEY,
+    Piętro INT
 )
 
 --wstawienie szafki
@@ -563,12 +573,12 @@ CREATE TABLE ImprezySzkolne
 )
 
 --wstawianie imprez
-INSERT VALUES [ImprezySzkolne](Data, Powód) VALUES
-(2021-01-02, "Nowy Rok"),
-(2020-06-15, "Zakończenie roku szkolnego"),
-(2020-10-10, "Andrzejki"),
-(2021-02-14, "Walentynki"),
-(GETDATE(), "Spontaniczna impreza")
+INSERT INTO [ImprezySzkolne](Data, Powód) VALUES
+('20210102', 'Nowy Rok'),
+('20200615', 'Zakończenie roku szkolnego'),
+('20201010', 'Andrzejki'),
+('20210214', 'Walentynki'),
+(GETDATE(), 'Spontaniczna impreza')
 \end{minted}
 
  \subsubsection{Urlopy}
@@ -578,18 +588,19 @@ Tabela zawierająca informacje odnośnie urlopów nauczycieli wraz z datami rozp
 --utworzenie tabeli
 CREATE TABLE Urlopy
 (
-	IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) ON UPDATE CASCADE ON DELETE NOT NULL,
-	DataPoczątku DATETIME NOT NULL,
-	DataKońca DATETIME,
-	Powód VARCHAR(255),
-	CzyPłatny BINARY NOT NULL,
+    IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) 
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    DataPoczątku DATETIME NOT NULL,
+    DataKońca DATETIME,
+    Powód VARCHAR(255),
+    CzyPłatny BIT NOT NULL,
 )
 
 --wstawianie urlopów
 INSERT INTO [Urlopy](IDNauczyciela, DataPoczątku, DataKońca, Powód, CzyPłatny) VALUES
-(4, 2021-01-01, 2021-01-02, "Kac noworoczny", NO),
-(4, 2021-04-01, 2021-04-30, "Złamana noga", YES),
-(8, 2020-10-01, 2020-12-30, "Problemy rodzinne", NO)
+(4, '20210101', '20210102', 'Kac noworoczny', 0),
+(4, '20210401', '20210430', 'Złamana noga', 1),
+(8, '20201001', '20201230', 'Problemy rodzinne', 0)
 \end{minted}
 
  \subsubsection{Zwolnienia}
@@ -599,17 +610,19 @@ Tabela przechowująca informacje odnośnie zwolnień ucznia wraz z datami począ
 --utworzenie tabeli
 CREATE TABLE Zwolnienia
 (
-	IDZwolenienia INT IDENTITY(1,1) PRIMARY KEY,
-	DataPoczątku DATETIME,
-	DataKońca DATETIME,
-	IDUcznia INT REFERENCES Uczniowie(IDUcznia)ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-	IDUsprawiedliwienia INT REFERENCES Usprawiedliwienia(IDUsprawiedliwienia)ON UPDATE CASCADE ON DELETE CASCADE
+    IDZwolenienia INT IDENTITY(1,1) PRIMARY KEY,
+    DataPoczątku DATETIME,
+    DataKońca DATETIME,
+    IDUcznia INT REFERENCES Uczniowie(IDUcznia)
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
+    IDUsprawiedliwienia INT REFERENCES Usprawiedliwienia(IDUsprawiedliwienia)
+        ON UPDATE CASCADE ON DELETE CASCADE
 )
 
 --wstawianie zwolnień
-INSERT INTO [Zwolnienia](DataPoczątku, DataKońca, IDUcznia, IDUsprawiedliwenia) VALUES
-(2020-10-10, 2020-10-11, 1, NULL),
-(2021-03-02, 2021-03-02, 2, 1)
+INSERT INTO [Zwolnienia](DataPoczątku, DataKońca, IDUcznia, IDUsprawiedliwienia) VALUES
+('20201010', '20201011', 1, NULL),
+('20210302', '20210302', 2, 1)
 \end{minted}
 
 \subsubsection{Usprawiedliwienia}
@@ -619,16 +632,16 @@ Prosta table zawierająca informacje odnośnie usprawiedliwienia dla zwolnienia 
 --utworzenie tabeli
 CREATE TABLE Usprawiedliwienia
 (
-	IDUsprawiedliwienia INT IDENTITY(1, 1) PRIMARY KEY,
-	Powód VARCHAR(255),
-	SygnaturaLekarska VARCHAR(255)
+    IDUsprawiedliwienia INT IDENTITY(1, 1) PRIMARY KEY,
+    Powód VARCHAR(255),
+    SygnaturaLekarska VARCHAR(255)
 )
 
 --wstawianie usprawiedliwienia 
 INSERT INTO [Usprawiedliwienia](Powód, SygnaturaLekarska) VALUES
-("Złamana noga", "L/13/202"),
-("Osłabienie", "L/13/201"), 
-("Biegunka", "L/01/01")
+('Złamana noga', 'L/13/202'),
+('Osłabienie', 'L/13/201'),
+('Biegunka', 'L/01/01')
 \end{minted}
 
 \newpage
@@ -808,8 +821,134 @@ Powyższa funkcja dla przykładowych danych i argumentu ID ucznia = 5 zwraca nas
 
 \section{Procedury i wyzwalacze}
 
-Wymagania: baza danych powinna być odpowiednio oprogramowana z wykorzystaniem procedur składowanych i wyzwalaczy (co najmniej po 5 procedur i po 5 wyzwalaczy).
+Wymagania projektu: baza danych powinna być odpowiednio oprogramowana z wykorzystaniem procedur składowanych i wyzwalaczy (co najmniej po 5 procedur i po 5 wyzwalaczy).
 
+\subsection{Wyzwalacze}
 
+\subsubsection{Dodanie nauczyciela}
+
+Operacja dodania nowego nauczyciela do bazy wywoła wyzwalacz, który określi czy operacja została wykonana pomyślnie oraz wskaże liczbę nauczycieli obecnie zapisanych do bazy danych.
+
+\begin{minted}{sql}
+IF OBJECT_ID('dodano_nauczyciela', 'TR') IS NOT NULL
+DROP TRIGGER dodano_nauczyciela
+GO
+CREATE TRIGGER dodano_nauczyciela ON Nauczyciele
+AFTER INSERT
+AS BEGIN
+DECLARE @msg NVARCHAR(55) = NULL
+DECLARE @nr INT
+SELECT @nr = COUNT(*) FROM Nauczyciele
+SELECT 'Nauczyciel dodany pomyślnie.' [Stan operacji], 
+CAST(@nr AS VARCHAR(10)) [Liczba nauczycieli w bazie]
+END
+GO
+
+--przykładowe dodanie nauczyciela z wywołaniem triggera
+INSERT INTO [Osoby](Imię, Nazwisko, Telefon) 
+VALUES('Adam', 'Nowonauczycielski', '+48 132 147 444')
+INSERT INTO [Nauczyciele](IDNauczyciela, WychowawcaKlasy, DataZatrudnienia, Stawka)
+VALUES(12, 3, GETDATE(), 8000)
+\end{minted}
+
+Powyższa komenda wyświetli następujące informacje na naszych przykładowych danych:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{dodanie_nauczyciela.png}
+  \caption{Dodanie nauczyciela Adama Nowonauczycielskiego}
+  \label{Dodanie nauczyciela Adama Nowonauczycielskiego}
+\end{figure}
+
+\subsubsection{Usunięcie ucznia}
+
+Jeśli zdecydujemy się na usunięcie z naszej bazy danych ucznia, wywoła się wyzwalacz informujący o przebiegu operacji usunięcia ucznia oraz liczbie uczniów, którzy pozostali w bazie. 
+
+\begin{minted}{sql}
+IF OBJECT_ID('usunięcie_ucznia', 'TR') IS NOT NULL
+DROP TRIGGER usunięcie_ucznia
+GO
+CREATE TRIGGER usunięcie_ucznia ON Uczniowie
+AFTER DELETE
+AS BEGIN
+DECLARE @msg NVARCHAR(55) = NULL
+DECLARE @nr INT
+SELECT @nr = COUNT(*) FROM Uczniowie
+SELECT 'Uczeń usunięty pomyślnie.' [Stan operacji], CAST(@nr AS VARCHAR(10)) [Liczba uczniów w bazie]
+END
+GO
+
+--przykładowe usunięcie ucznia z wywołaniem triggera
+DELETE FROM Uczniowie WHERE IDUcznia = 11
+\end{minted}
+
+Wykonanie powyższej operacji "DELETE" sprawi, że na naszym ekranie zostanie wyświetlony poniższy komunikat:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{usunięcie_ucznia.png}
+  \caption{Usunięcie ucznia o jego ID równym 11}
+  \label{Usunięcie ucznia o jego ID równym 11}
+\end{figure}
+
+\subsubsection{Sprawdzenie liczby klas}
+
+Koncept naszej bazy danych zakłada, że nie może istnieć klasa bez uczniów. Stąd też powstała potrzeba implementacji wyzwalacza, który uniemożliwi dodanie nowej klasy do naszej bazy danych w przypadku, gdyby było zbyt mało uczniów, aby stworzyć nową klasę. Nasz wyzwalacz sprawdza liczbę uczniów w całej szkole i nie zezwala na sytuację dodania klasy, do której nie można byłoby przypisać uczniów. Nasz wyzwalacz nie sprawdza, czy nie występuje na przykład sytuacja, że do naszej nowej klasy można byłoby dodać tylko jednego ucznia - akceptujemy taką sytuację, zakładając że wtedy możemy do nowej klasy przepisać uczniów z klas, które obecnie już w bazie danych się znajdują. 
+
+\begin{minted}{sql}
+CREATE TRIGGER sprawdzenie_liczy_klas ON Klasy
+AFTER INSERT
+AS
+IF (SELECT COUNT(IDKlasy) FROM Klasy) > (SELECT COUNT(IDUcznia) FROM Uczniowie)
+ROLLBACK
+RAISERROR('Nie można dodać klasy, ponieważ jest za mało uczniów.', 16, 1)
+GO
+--przykładowe dodanie klasy z wywołaniem triggera
+INSERT INTO [Klasy](RokRozpoczęcia, LiteraPorządkowa, IDProfilu) VALUES
+(2012, 'A', 1),
+(2012, 'B', 1),
+(2012, 'C', 2),
+(2012, 'D', 2),
+(2012, 'E', 3),
+(2012, 'F', 3)
+\end{minted}
+
+Powyższe dodanie szeregu klas spowoduje wycofanie transakcji oraz wyświetlenie następującego błędu, informującego o powodzie odrzucenia transakcji:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{sprawdzenie_liczby_klas.png}
+  \caption{Błąd, wyświetlający się jeśli dodamy więcej klas niż uczniów.}
+  \label{Błąd, wyświetlający się jeśli dodamy więcej klas niż uczniów.}
+\end{figure}
+
+\subsubsection{Sprawdzenie możliwości zorganizowania imprezy szkolnej}
+
+Nasza baza danych posiada zaimplementowane sprawdzenie możliwości dodania nowej imprezy szkolnej. Z racji, że uczniowie powinni się uczyć, a nie obijać, sprawdzamy czy data nowo dodanej imprezy szkolnej została ustalona na dzień wolny od nauki. Jeśli nie, to transakcja zostaje wycofana.
+
+\begin{minted}{sql}
+CREATE TRIGGER impreza_wolne ON ImprezySzkolne
+AFTER INSERT
+AS 
+DECLARE
+@Data INT
+BEGIN
+IF NOT EXISTS (
+    SELECT Data FROM DniWolne d
+    WHERE d.Data = @Data
+    )
+ROLLBACK
+RAISERROR('Nie można zorganizować imprezy w dzień nauki.', 16, 1)
+END
+
+--dodanie przykładowej imprezy
+INSERT INTO [ImprezySzkolne](Data, Powód) VALUES
+(2021-03-30, 'Bo nie chce się nam uczyć')
+\end{minted}
+
+Powyższy "INSERT" wywoła następujący błąd:
+
+\begin{figure}[h]
+  \includegraphics[width=\linewidth]{impreza_wolne.png}
+  \caption{Błąd, wyświetlający się jeśli dodamy impreze w dzień nauki.}
+  \label{Błąd, wyświetlający się jeśli dodamy impreze w dzień nauki.}
+\end{figure}
 
 \end{document}

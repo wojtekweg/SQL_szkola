@@ -11,7 +11,9 @@ IF NOT EXISTS (
 ROLLBACK
 RAISERROR('Nie można zorganizować imprezy w dzień nauki.', 16, 1)
 END
-
 --usuniecie przykladowej klasy
+INSERT INTO [DniWolne](Data, Powód) VALUES
+('20210101', 'blahhh')
+SELECT * FROM DniWolne
 INSERT INTO [ImprezySzkolne](Data, Powód) VALUES
-(2021-03-30, 'Bo nie chce się nam uczyć')
+('20210101', 'Bo nie chce się nam uczyć')

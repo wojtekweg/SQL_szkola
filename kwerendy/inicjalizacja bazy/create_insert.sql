@@ -51,10 +51,10 @@ INSERT INTO [Nauczyciele]
 (IDNauczyciela, WychowawcaKlasy, DataZatrudnienia, Stawka)
 VALUES
 (4, NULL, GETDATE(), 5400),
-(6, NULL, 2012-08-02, 3000),
-(7, NULL, 2001-10-11, 15000),
-(8, 1, 2013-08-01, 2300),
-(9, 2, 2020-01-01, 4500)
+(6, NULL, '2012-08-02', 3000),
+(7, NULL, '2001-10-11', 15000),
+(8, 1, '2013-08-01', 2300),
+(9, 2, '2020-01-01', 4500)
 CREATE TABLE Uczniowie
 (
 IDUcznia INT REFERENCES Osoby(IDOsoby) ON UPDATE CASCADE ON DELETE CASCADE PRIMARY KEY,
@@ -122,10 +122,10 @@ Data DATETIME
 )
 INSERT INTO [Oceny] (IDUcznia, Ocena, IDPrzedmiotu, IDNauczyciela, Data) VALUES
 (1, 4, 1, 4, GETDATE()),
-(1, 5, 1, 7, 2021-02-16),
-(2, 2, 2, 7, 2021-02-16),
+(1, 5, 1, 7, '2021-02-16'),
+(2, 2, 2, 7, '2021-02-16'),
 (3, 3, 2, 8, GETDATE()),
-(10, 2, 3, 9, 2021-01-05)
+(10, 2, 3, 9, '2021-01-05')
 CREATE TABLE PrzedmiotyFakultatywne
 (
 IDtemp INT IDENTITY(1,1) PRIMARY KEY NOT NULL,
@@ -147,9 +147,9 @@ Data DATETIME,
 Opis VARCHAR(255),
 )
 INSERT INTO [Sprawdziany](IDNauczyciela, IDKlasy, Data, Opis) VALUES
-(4, 1, 2021-10-12, 'Rodziały 1-6'),
-(8, 2, 2020-01-10, 'Cały zakres materiału'),
-(9, 2, 2021-10-29, 'Rodziały 7-9')
+(4, 1, '2021-10-12', 'Rodziały 1-6'),
+(8, 2, '2020-01-10', 'Cały zakres materiału'),
+(9, 2, '2021-10-29', 'Rodziały 7-9')
 CREATE TABLE Kartkówki
 (
 IDKartkówki INT IDENTITY(1,1) PRIMARY KEY,
@@ -163,12 +163,12 @@ CzyZapowiedziana BIT
 )
 INSERT INTO [Kartkówki](IDNauczyciela, IDKlasy, Data, Opis, CzyZapowiedziana) VALUES
 (4, 1, GETDATE(), 'Niezapowiedziana kartkówka z poprzedniej lekcji', 0),
-(8, 2, 2020-01-10, 'Poprzednie 3 tematy', 1)
+(8, 2, '20200110', 'Poprzednie 3 tematy', 1)
 INSERT INTO [Uwagi](IDUcznia, OpisUwagi, DataUwagi, PowagaUwagi) VALUES
 (1, 'Bujał się na krześle', GETDATE(), 1),
-(1, 'Rozmawiał na lekcji', 2021-03-02, 1),
+(1, 'Rozmawiał na lekcji', '2021-03-02', 1),
 (2, 'Ściągał na teście', GETDATE(), 2),
-(3, 'Pobił kolegę', 2021-04-11, 3)
+(3, 'Pobił kolegę', '2021-04-11', 3)
 CREATE TABLE Stypendia
 (
 IDStypendium INT IDENTITY(1,1) PRIMARY KEY,
@@ -178,9 +178,9 @@ DataKońca DATETIME,
 Kwota MONEY
 )
 INSERT INTO [Stypendia](IDUcznia, DataPoczątku, DataKońca, Kwota) VALUES
-(1, 2020-09-01, 2021-06-30, 500),
-(2, 2019-09-01, 2020-06-30, 1000),
-(5, 2019-09-01, 2020-06-30, 200)
+(1, '2020-09-01', '2021-06-30', 500),
+(2, '2019-09-01', '2020-06-30', 1000),
+(5, '2019-09-01', '2020-06-30', 200)
 CREATE TABLE Sale
 (
 IDSali INT IDENTITY(1,1) PRIMARY KEY,
@@ -189,11 +189,11 @@ IDPrzedmiotu INT REFERENCES SpisPrzedmiotów(IDPrzedmiotu) ON UPDATE CASCADE ON 
 OstatniRemont DATETIME
 )
 INSERT INTO [Sale](NazwaSali, IDPrzedmiotu, OstatniRemont) VALUES
-('23A', 1, 1993-03-04),
-('1A', 2, 1895-02-13),
+('23A', 1, '1993-03-04'),
+('1A', 2, '1895-02-13'),
 ('1B', 3, GETDATE()),
-('2', NULL, 2010-10-11),
-('Świetlica', NULL, 2010-05-23)
+('2', NULL, '2010-10-11'),
+('Świetlica', NULL, '2010-05-23')
 INSERT INTO [Klasy](RokRozpoczęcia, LiteraPorządkowa, IDProfilu) VALUES
 (2019, 'A', 1),
 (2019, 'B', 1),
@@ -220,20 +220,20 @@ IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) ON UPDATE CASCADE ON DEL
 Data DATETIME
 )
 INSERT INTO [Wywiadówki](IDKlasy, IDNauczyciela, DATA) VALUES
-(1, 4, 2020-10-12),
-(2, 8, 2020-12-12),
-(3, 4, 2021-01-20),
-(4, 9, 2021-02-10)
+(1, 4, '2020-10-12'),
+(2, 8, '2020-12-12'),
+(3, 4, '2021-01-20'),
+(4, 9, '2021-02-10')
 CREATE TABLE Koła
 (
 IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
-DataZajęć INT NOT NULL,
+DataZajęć DATETIME NOT NULL,
 IDSali INT REFERENCES Sale(IDSali) NOT NULL,
 NazwaKoła VARCHAR(255) NOT NULL
 )
 INSERT INTO [Koła](IDNauczyciela, DataZajęć, IDSali, NazwaKoła) VALUES
-(4, 2021-02-10, 1, 'Koło Informatyczne'),
-(4, 2021-02-12, 1, 'Koło Matematyczne')
+(4, '2021-02-10', 1, 'Koło Informatyczne'),
+(4, '2021-02-12', 1, 'Koło Matematyczne')
 CREATE TABLE WycieczkiSzkolne
 (
 IDNauczyciela INT REFERENCES Nauczyciele(IDNauczyciela) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
@@ -243,12 +243,12 @@ LiczbaDni INT,
 Miejsce VARCHAR(255)
 )
 INSERT INTO [WycieczkiSzkolne](IDNauczyciela, IDKlasy, Data, LiczbaDni, Miejsce) VALUES
-(4, 1, 2020-10-10, 5, 'Zagrzeb'),
-(4, 2, 2020-12-01, 2, 'Kraków'),
-(8, 1, 2021-01-02, 1, 'Warszawa'),
-(8, 3, 2020-10-20, 4, 'Berlin'),
-(9, 2, 2019-10-12, 3, 'Lwów'),
-(9, 1, 2019-12-30, 1, 'Zakopane')
+(4, 1, '2020-10-10', 5, 'Zagrzeb'),
+(4, 2, '2020-12-01', 2, 'Kraków'),
+(8, 1, '2021-01-02', 1, 'Warszawa'),
+(8, 3, '2020-10-20', 4, 'Berlin'),
+(9, 2, '2019-10-12', 3, 'Lwów'),
+(9, 1, '2019-12-30', 1, 'Zakopane')
 CREATE TABLE SzafkiSzkolne
 (
 IDUcznia INT REFERENCES Uczniowie(IDUcznia) ON UPDATE CASCADE ON DELETE CASCADE NOT NULL,
@@ -269,10 +269,10 @@ Data DATETIME,
 Powód VARCHAR(255)
 )
 INSERT INTO [ImprezySzkolne](Data, Powód) VALUES
-(2021-01-02, 'Nowy Rok'),
-(2020-06-15, 'Zakończenie roku szkolnego'),
-(2020-10-10, 'Andrzejki'),
-(2021-02-14, 'Walentynki'),
+('2021-01-02', 'Nowy Rok'),
+('2020-06-15', 'Zakończenie roku szkolnego'),
+('2020-10-10', 'Andrzejki'),
+('2021-02-14', 'Walentynki'),
 (GETDATE(), 'Spontaniczna impreza')
 CREATE TABLE Urlopy
 (
@@ -283,9 +283,9 @@ Powód VARCHAR(255),
 CzyPłatny BIT NOT NULL,
 )
 INSERT INTO [Urlopy](IDNauczyciela, DataPoczątku, DataKońca, Powód, CzyPłatny) VALUES
-(4, 2021-01-01, 2021-01-02, 'Kac noworoczny', 0),
-(4, 2021-04-01, 2021-04-30, 'Złamana noga', 1),
-(8, 2020-10-01, 2020-12-30, 'Problemy rodzinne', 0)
+(4, '2021-01-01', '2021-01-02', 'Kac noworoczny', 0),
+(4, '2021-04-01', '2021-04-30', 'Złamana noga', 1),
+(8, '2020-10-01', '2020-12-30', 'Problemy rodzinne', 0)
 CREATE TABLE Usprawiedliwienia
 (
 IDUsprawiedliwienia INT IDENTITY(1, 1) PRIMARY KEY,
@@ -305,5 +305,5 @@ INSERT INTO [Usprawiedliwienia](Powód, SygnaturaLekarska) VALUES
 ('Osłabienie', 'L/13/201'),
 ('Biegunka', 'L/01/01')
 INSERT INTO [Zwolnienia](DataPoczątku, DataKońca, IDUcznia, IDUsprawiedliwienia) VALUES
-(2020-10-10, 2020-10-11, 1, NULL),
-(2021-03-02, 2021-03-02, 2, 1)
+('2020-10-10', '2020-10-11', 1, NULL),
+('2021-03-02', '2021-03-02', 2, 1)
