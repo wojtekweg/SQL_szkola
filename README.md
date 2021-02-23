@@ -6,7 +6,7 @@ Repozytorium jest zbiorem plików potrzebnych do realizacji projektu zaliczeniow
 
 Baza danych zawiera 24 tabele, 10 widoków i funkcji oraz 10 procedur i wyzwalaczy pozwalających na obsługę szkolnej bazy danych przechowującej informacje dotyczące jej uczniów, pracowników oraz innych pododnych.
 
-Polecamy zajrzeć do pliku `dokumentacja.pdf`, który szczegółowo tłumaczy technikalia projektu.
+Polecamy zajrzeć do pliku `dokumentacja.pdf`, który szczegółowo tłumaczy technikalia projektu. Projekt uzyskał maksymalną liczbę punktów.
 
 ## Wykorzystane technologie
 
@@ -14,4 +14,4 @@ Projekt pisany jest w dialekcie SQL Server 2012 z wykorzystanie SQL Server Manag
 
 ## Autorzy
 
-Konrad Nowak, Jakub Łukasiewicz, Wojciech Węgrzyn
+Konrad Nowak, Jakub Kołodziejczyk, Wojciech Węgrzyn
