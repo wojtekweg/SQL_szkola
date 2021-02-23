@@ -63,19 +63,19 @@ Głównym założeniem naszej grupy było utworzenie bazy danych, która pozwala
 
 Nasz projekt nie pretenduje do bycia zastępnikiem elektronicznego dziennika typu Librus czy Synerga. Staraliśmy się raczej stworzyć bazę, która będzie dawała przejrzyste informacje zarządzania organizacją szkoły, stąd też wprowadziliśmy specjalne tabele typu urlopy, dni wolne czy usprawiedliwienia. 
 
-Głównymi ograniczeniami naszej bazy są dwa fakty:
-
-Pierwszy z nich to limit przedmiotów, których może uczyć dany nauczyciel. Nasz projekt pozwala jednemu nauczycielowi prowadzić jeden zwykły przedmiot oraz jeden fakultatywny. Mamy świadomość alternatywnych rozwiązań tego problemu, ale postanowiliśmy zdecydować się na taką implementację ze względu na możliwości analizy danych, na które pozwala obecny stan rzeczy. 
-
-Drugim problemem naszego projektu, który mógłby nie sprostać oczekiwaniom potencjalnego klienta jest uproszczony system rejestracji ocen uczniów. Jak wcześniej wspomnieliśmy, nie zamierzaliśmy utworzyć dziennika elektronicznego, a raczej system pozwalający na analizę danych - możemy sprawdzić ile ocen ma dany uczeń, jaką ma średnią, ile ocen wystawił dany nauczyciel i inne odpowiednimi procedurami. Niemniej nie implementujemy wagi ocen czy też ocen rocznych z całych przedmiotów, ponieważ nie to było naszym celem.
-
 \subsection{Możliwości}
 
-DO UZUPELNIENIA
+Wiele funkcji, procedur, wyzwalaczy i widoków w naszej bazie danych pozwalają na zautomatyzowane zarządzanie bazą danych szkoły od strony jej administracji. 
+
+Potencjalny użytkownik naszego projektu z łatwością może błyskawicznie wyświetlić najbardziej potrzebne dane, takie jak średnia ocen wszystkich uczniów czy też wypisanie uczniów konkretnych klas. 
+
+Dodaliśmy też pewne ograniczenia, chroniące bazę przed niepożądanymi działaniami - o tym opowiemy w odpowiednim momencie.
 
 \subsection{Ograniczenia przyjęte przy projektowaniu}
 
 Nasza baza danych obsługuje jedynie oceny w postaci typu danych INT, stąd też nie są możliwe oceny cząstkowe. 
+
+Drugim problemem naszego projektu, który mógłby nie sprostać oczekiwaniom potencjalnego klienta jest uproszczony system rejestracji ocen uczniów. Jak wcześniej wspomnieliśmy, nie zamierzaliśmy utworzyć dziennika elektronicznego, a raczej system pozwalający na analizę danych - możemy sprawdzić ile ocen ma dany uczeń, jaką ma średnią, ile ocen wystawił dany nauczyciel i inne odpowiednimi procedurami. Niemniej nie implementujemy wagi ocen czy też ocen rocznych z całych przedmiotów, ponieważ nie to było naszym celem.
 
 \subsection{Strategia pielęgnacji}
 
@@ -88,7 +88,7 @@ Najbardziej dynamiczną naszą tabelą będzie tabela "Oceny" - pomijając ją o
 \newpage
 \section{Schematy}
 
-\subsection{Diagramy ER}
+\subsection{Diagram ER}
 
 \begin{figure}[h]
   \includegraphics[width=\linewidth]{diagram_ER.png}
@@ -96,13 +96,14 @@ Najbardziej dynamiczną naszą tabelą będzie tabela "Oceny" - pomijając ją o
   \label{Diagram ER}
 \end{figure}
 
+\newpage
+\subsection{Diagram ER (SSMS)}
+
 \begin{figure}[h]
   \includegraphics[width=\linewidth]{diagram_ER_SSMS.png}
   \caption{Diagram ER (SSMS)}
   \label{Diagram ER (SSMS)}
 \end{figure}
-
-\subsection{Schemat bazy danych}
 
 \newpage
 \section{Dokumentacja technicza}
@@ -112,7 +113,7 @@ Najbardziej dynamiczną naszą tabelą będzie tabela "Oceny" - pomijając ją o
 Wymagania projektu określały, że na każdą osobę pracującą przy projekcie wymagane jest zaimplementowanie 8 tabel, stąd też w tym rozdziale przedstawimy implementację 24 tabel.
 
 \subsubsection{Osoby}
-Jedna z podstawowych tabel bazy danych. Zawiera najistotniejsze dane o osobach uczestniczących do szkoły (nauczyciele i uczniowie) - ID, Imię, nazwisko, adres zamieszkania oraz telefon komórkowy.
+Jedna z podstawowych tabel bazy danych. Zawiera najistotniejsze dane o osobach uczestniczących do szkoły (nauczyciele i uczniowie) - ID, imię, nazwisko oraz telefon komórkowy.
 
 \begin{minted}{sql}
 CREATE TABLE Osoby
@@ -138,16 +139,16 @@ INSERT INTO [Osoby](Imię, Nazwisko, Telefon) VALUES
 \end{minted}
 
 \subsubsection{Nauczyciele}
- Jedna z podstawowych tabel bazy danych. Zawiera informacje o przedmiotach, jakie dany nauczyciel prowadzi (musi prowadzić jeden przedmiot główny, ale nie musi prowadzić fakultatywnego), jakiej klasy jest wychowawcą, kiedy został zatrudniony oraz ile zarabia miesięcznie.
+ Jedna z podstawowych tabel bazy danych. Zawiera informacje o tym jakiej klasy jest wychowawcą, kiedy został zatrudniony oraz ile zarabia miesięcznie.
  
  \begin{minted}{sql}
 CREATE TABLE Nauczyciele
 (
     IDNauczyciela INT REFERENCES Osoby(IDOsoby)
-    ON UPDATE CASCADE ON DELETE CASCADE PRIMARY KEY,
+        ON UPDATE CASCADE ON DELETE CASCADE PRIMARY KEY,
     WychowawcaKlasy INT REFERENCES Klasy(IDKlasy),
     DataZatrudnienia DATETIME,
-    Stawka MONEY
+    Stawka MONEY,
 )
 
 INSERT INTO [Nauczyciele]
@@ -160,17 +161,19 @@ VALUES
 (9, 2, '20200101', 4500)
 \end{minted}
  
+\newpage
+ 
 \subsubsection{Uczniowie}
-Tabela przyporządkowująca danemu uczniowi klasę, do której chodzi, oraz uwagę, jaką dostał.
+Tabela przyporządkowująca danemu uczniowi klasę, do której chodzi.
  
 \begin{minted}{sql}
  --utworzenie tabeli
 CREATE TABLE Uczniowie
 (
     IDUcznia INT REFERENCES Osoby(IDOsoby) 
-    ON UPDATE CASCADE ON DELETE CASCADE PRIMARY KEY,
+        ON UPDATE CASCADE ON DELETE CASCADE PRIMARY KEY,
     IDKlasy INT REFERENCES Klasy(IDKlasy) 
-    ON UPDATE CASCADE ON DELETE CASCADE NOT NULL
+        ON UPDATE CASCADE ON DELETE CASCADE NOT NULL
 )
 
 --wstawienie uczniów
@@ -210,7 +213,7 @@ INSERT INTO [Oceny] (IDUcznia, Ocena, IDPrzedmiotu, IDNauczyciela, Data) VALUES
 \end{minted}
 
 \subsubsection{Przedmioty}
- Prosta tabela będąca łącznikiem między nauczycielem a spisem przedmiotów. Zawiera tylko IDPrzedmiotu i IDNauczyciela (nauczyciel może uczyć tylko jeden przedmiot).
+ Prosta tabela będąca łącznikiem między nauczycielem, a spisem przedmiotów. Zawiera tylko IDPrzedmiotu i IDNauczyciela.
  
  \begin{minted}{sql}
 --utworzenie tabeli
@@ -233,7 +236,7 @@ INSERT INTO [Przedmioty](IDPrzedmiotu, IDNauczyciela) VALUES
 \end{minted}
 
 \subsubsection{Przedmioty fakultatywne}
- Prosta tabela będąca łącznikiem między nauczycielem a spisem przedmiotów. Zawiera tylko IDPrzedmiotu i IDNauczyciela (nauczyciel może uczyć tylko jeden przedmiot fakulatywny, ale nie jest to obowiązkowe).
+ Prosta tabela będąca łącznikiem między nauczycielem a spisem przedmiotów. Zawiera tylko IDPrzedmiotu i IDNauczyciela.
  
  \begin{minted}{sql}
 --utworzenie tabeli
@@ -679,7 +682,8 @@ Widok ten wyświetli wszystkie sprawdziany wraz z ich datą, opisem oraz informa
 
 \begin{minted}{sql}
 CREATE VIEW wyświetl_sprawdziany AS
-SELECT A.Data, A.Opis, C.Imię AS [Imię Nauczyciela], C.Nazwisko AS [Nazwisko Nauczyciela], D.LiteraPorządkowa, D.RokRozpoczęcia, E.NazwaProfilu
+SELECT A.Data, A.Opis, C.Imię AS [Imię Nauczyciela], 
+C.Nazwisko AS [Nazwisko Nauczyciela], D.LiteraPorządkowa, D.RokRozpoczęcia, E.NazwaProfilu
 FROM Sprawdziany A JOIN Nauczyciele B
 ON A.IDnauczyciela = B.IDNauczyciela
 JOIN Osoby C ON B.IDNauczyciela = C.IDOsoby
@@ -770,6 +774,7 @@ SELECT * FROM najnowszy_sprawdzian
     \end{center}
 \end{figure}
 
+\newpage
 \subsection{Funkcje}
 
 \subsubsection{Wypisanie uczniów danej klasy}
@@ -930,8 +935,6 @@ Wymagania projektu: baza danych powinna być odpowiednio oprogramowana z wykorzy
 Operacja dodania nowego nauczyciela do bazy wywoła wyzwalacz, który określi czy operacja została wykonana pomyślnie oraz wskaże liczbę nauczycieli obecnie zapisanych do bazy danych.
 
 \begin{minted}{sql}
-IF OBJECT_ID('dodano_nauczyciela', 'TR') IS NOT NULL
-DROP TRIGGER dodano_nauczyciela
 GO
 CREATE TRIGGER dodano_nauczyciela ON Nauczyciele
 AFTER INSERT
@@ -954,9 +957,11 @@ VALUES(12, 3, GETDATE(), 8000)
 Powyższa komenda wyświetli następujące informacje na naszych przykładowych danych:
 
 \begin{figure}[h]
-  \includegraphics[width=\linewidth]{dodanie_nauczyciela.png}
+\begin{center}
+  \includegraphics[width=0.6\linewidth]{dodanie_nauczyciela.png}
   \caption{Dodanie nauczyciela Adama Nowonauczycielskiego}
   \label{Dodanie nauczyciela Adama Nowonauczycielskiego}
+\end{center}
 \end{figure}
 
 \subsubsection{Usunięcie ucznia}
@@ -964,8 +969,6 @@ Powyższa komenda wyświetli następujące informacje na naszych przykładowych 
 Jeśli zdecydujemy się na usunięcie z naszej bazy danych ucznia, wywoła się wyzwalacz informujący o przebiegu operacji usunięcia ucznia oraz liczbie uczniów, którzy pozostali w bazie. 
 
 \begin{minted}{sql}
-IF OBJECT_ID('usunięcie_ucznia', 'TR') IS NOT NULL
-DROP TRIGGER usunięcie_ucznia
 GO
 CREATE TRIGGER usunięcie_ucznia ON Uczniowie
 AFTER DELETE
@@ -973,10 +976,10 @@ AS BEGIN
 DECLARE @msg NVARCHAR(55) = NULL
 DECLARE @nr INT
 SELECT @nr = COUNT(*) FROM Uczniowie
-SELECT 'Uczeń usunięty pomyślnie.' [Stan operacji], CAST(@nr AS VARCHAR(10)) [Liczba uczniów w bazie]
+SELECT 'Uczeń usunięty pomyślnie.' [Stan operacji], 
+CAST(@nr AS VARCHAR(10)) [Liczba uczniów w bazie]
 END
 GO
-
 --przykładowe usunięcie ucznia z wywołaniem triggera
 DELETE FROM Uczniowie WHERE IDUcznia = 11
 \end{minted}
@@ -984,9 +987,11 @@ DELETE FROM Uczniowie WHERE IDUcznia = 11
 Wykonanie powyższej operacji "DELETE" sprawi, że na naszym ekranie zostanie wyświetlony poniższy komunikat:
 
 \begin{figure}[h]
-  \includegraphics[width=\linewidth]{usunięcie_ucznia.png}
+\begin{center}
+  \includegraphics[width=0.6\linewidth]{usunięcie_ucznia.png}
   \caption{Usunięcie ucznia o jego ID równym 11}
   \label{Usunięcie ucznia o jego ID równym 11}
+\end{center}
 \end{figure}
 
 \subsubsection{Sprawdzenie liczby klas}
@@ -1014,9 +1019,11 @@ INSERT INTO [Klasy](RokRozpoczęcia, LiteraPorządkowa, IDProfilu) VALUES
 Powyższe dodanie szeregu klas spowoduje wycofanie transakcji oraz wyświetlenie następującego błędu, informującego o powodzie odrzucenia transakcji:
 
 \begin{figure}[h]
-  \includegraphics[width=\linewidth]{sprawdzenie_liczby_klas.png}
+\begin{center}
+  \includegraphics[width=0.6\linewidth]{sprawdzenie_liczby_klas.png}
   \caption{Błąd, wyświetlający się jeśli dodamy więcej klas niż uczniów.}
   \label{Błąd, wyświetlający się jeśli dodamy więcej klas niż uczniów.}
+ \end{center}
 \end{figure}
 
 \subsubsection{Sprawdzenie możliwości zorganizowania imprezy szkolnej}
@@ -1046,9 +1053,11 @@ INSERT INTO [ImprezySzkolne](Data, Powód) VALUES
 Powyższy "INSERT" wywoła następujący błąd:
 
 \begin{figure}[h]
-  \includegraphics[width=\linewidth]{impreza_wolne.png}
+\begin{center}
+  \includegraphics[width=0.75\linewidth]{impreza_wolne.png}
   \caption{Błąd, wyświetlający się jeśli dodamy impreze w dzień nauki.}
   \label{Błąd, wyświetlający się jeśli dodamy impreze w dzień nauki.}
+\end{center}
 \end{figure}
 
 \subsubsection{Średnia ocen uczniów po dodaniu oceny}
@@ -1079,5 +1088,84 @@ VALUES
   \label{Niestety, uczniowie naszej testowej bazy danych nie mogą pochwalić się zbyt dobrymi osiągnięciami w nauce...}
   \end{center}
 \end{figure}
+
+\subsection{Procedury}
+
+\subsubsection{Dodanie przedmiotu do bazy}
+
+\begin{minted}{sql}
+ALTER PROCEDURE dodaj_przedmiot
+@nazwa VARCHAR(255)
+AS
+BEGIN
+DECLARE @count INT
+SET @count = (SELECT COUNT(*) FROM SpisPrzedmiotów)
+SET @count = @count + 1;
+IF NOT EXISTS (SELECT * FROM SpisPrzedmiotów WHERE NazwaPrzedmiotu=@nazwa)
+INSERT INTO [SpisPrzedmiotów](IDPrzedmiotu, NazwaPrzedmiotu) VALUES (@count, @nazwa)
+ELSE 
+PRINT 'Taki przedmiot już istnieje'
+END
+\end{minted}
+
+\subsubsection{Liczba uczniów w szkole}
+
+\begin{minted}{sql}
+CREATE PROCEDURE ile_uczniów
+AS
+BEGIN
+SELECT COUNT(*) FROM Uczniowie
+END
+\end{minted}
+
+\subsubsection{Sprawdzenie, czy podana osoba istnieje}
+
+\begin{minted}{sql}
+CREATE PROCEDURE czy_istnieje_osoba
+@imie VARCHAR(255),
+@nazwisko VARCHAR(255)
+AS
+BEGIN
+IF EXISTS (SELECT * FROM Osoby WHERE Imię=@imie AND Nazwisko=@nazwisko)
+PRINT 'TAK'
+ELSE
+PRINT 'NIE'
+END
+\end{minted}
+
+\subsubsection{Określenie liczby wywiadówek w klasie}
+
+\begin{minted}{sql}
+CREATE PROCEDURE ile_wywiadówek
+@klasa INT
+AS
+BEGIN
+DECLARE @count INT
+SET @count = (SELECT COUNT(*) FROM Wywiadówki WHERE IDKlasy=@klasa)
+PRINT @count
+END
+\end{minted}
+
+\subsubsection{Dodanie uwagi dla ucznia}
+
+\begin{minted}{sql}
+ALTER PROCEDURE dodaj_uwagę
+@imię VARCHAR(255),
+@nazwisko VARCHAR(255),
+@uwaga VARCHAR(255),
+@powaga_uwagi INT
+AS
+BEGIN
+DECLARE @ID INT
+IF EXISTS (SELECT IDOsoby FROM Osoby WHERE Imię=@imię AND Nazwisko=@nazwisko)
+BEGIN
+SET @ID = (SELECT IDOsoby FROM Osoby WHERE Imię=@imię AND Nazwisko=@nazwisko);
+INSERT INTO [Uwagi](IDUcznia, OpisUwagi, DataUwagi, PowagaUwagi) 
+VALUES (@ID, @uwaga, GETDATE(), @powaga_uwagi)
+END
+ELSE
+PRINT 'Taki uczeń nie istnieje'
+END
+\end{minted}
 
 \end{document}
